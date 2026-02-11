@@ -83,7 +83,7 @@ export const SongTable: React.FC<SongTableProps> = ({
             title: language === 'en' ? 'Likes' : 'Лайки',
             dataIndex: 'likes',
             key: 'likes',
-            render: (likes) => likes.toFixed(1),
+            render: (likes) => likes.toFixed(0),
             width: 100,
         }
     ];
@@ -103,11 +103,12 @@ export const SongTable: React.FC<SongTableProps> = ({
                         setPage(p);
                         if (ps !== pageSize) setPageSize(ps);
                     },
-                    showSizeChanger: true
+                    showSizeChanger: true,
+                    locale: { items_per_page: language === 'en' ? '/ page' : '/ стр.' }
                 } : false}
                 loading={loading}
                 expandable={{
-                    expandedRowRender: (record) => <MusicInfo song={record} />,
+                    expandedRowRender: (record) => <MusicInfo song={record} language={language} />,
                     expandRowByClick: true,
                 }}
                 scroll={{ y: 'calc(100vh - 200px)' }}

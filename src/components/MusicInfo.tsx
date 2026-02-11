@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Space, Spin, Alert, Slider, Button } from 'antd';
-import { HeartFilled, PlayCircleFilled, PauseCircleFilled, WarningOutlined } from '@ant-design/icons';
+import { HeartFilled, PlayCircleFilled, PauseCircleFilled, WarningOutlined, DownloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import type { Song, SongResult } from '../types';
 import defaultCoverArt from '../assets/default-cover-art.png';
@@ -9,9 +9,10 @@ const { Title, Text } = Typography;
 
 interface MusicInfoProps {
     song: Song;
+    language: 'en' | 'ru';
 }
 
-export const MusicInfo: React.FC<MusicInfoProps> = ({ song }) => {
+export const MusicInfo: React.FC<MusicInfoProps> = ({ song, language }) => {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<SongResult | null>(null);
     const [genError, setGenError] = useState<string | null>(null);
@@ -35,7 +36,7 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song }) => {
             setGenError(null);
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-                const response = await axios.post<SongResult>(`${apiUrl}/api/song/generate?seed=${song.seed}`);
+                const response = await axios.post<SongResult>(`${apiUrl}/api/song/generate?seed=${song.seed}&language=${language}`);
                 setResult(response.data);
                 if (response.data.finalMixPath) {
                     setCurrentAudioSrc(`${apiUrl}${response.data.finalMixPath}`);
@@ -114,9 +115,9 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                         <Title level={3} style={{ margin: 0 }}>{song.musicName}</Title>
-                        <Text type="secondary" style={{ fontSize: '1.2em' }}>by {song.artistName}</Text>
+                        <Text type="secondary" style={{ fontSize: '1.2em' }}>{language === 'en' ? 'by' : 'исполнитель'} {song.artistName}</Text>
                         <br />
-                        <Text type="secondary">from {song.albumTitle} • {song.genre}</Text>
+                        <Text type="secondary">{language === 'en' ? 'from' : 'альбом'} {song.albumTitle} • {song.genre}</Text>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                         <Space>
@@ -129,7 +130,7 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song }) => {
                 <div style={{ marginTop: 24 }}>
                     {loading && (
                         <div style={{ textAlign: 'center', padding: '20px' }}>
-                            <Spin tip="Generating Music & Image..." size="large" />
+                            <Spin tip={language === 'en' ? "Generating Music & Image..." : "Генерация музыки и изображения..."} size="large" />
                         </div>
                     )}
 
@@ -155,7 +156,7 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song }) => {
                                     icon={isPlaying ? <PauseCircleFilled /> : <PlayCircleFilled />}
                                     size="large"
                                     onClick={togglePlay}
-                                    style={{ flexShrink: 0, width: 50, height: 50, fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    style={{ flexShrink: 0, width: 50, height: 50, fontSize: 23, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 />
 
                                 <div style={{ flex: 1 }}>
@@ -173,13 +174,84 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song }) => {
                                 <Text type="secondary" style={{ width: 80, textAlign: 'right' }}>
                                     {formatTime(currentTime)} / {formatTime(duration)}
                                 </Text>
+
+                                <Button
+                                    type="text"
+                                    icon={<DownloadOutlined />}
+                                    href={currentAudioSrc}
+                                    download={`${song.artistName} - ${song.musicName}.wav`}
+                                    target="_blank"
+                                    title={language === 'en' ? "Download" : "Скачать"}
+                                />
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div style={{ marginTop: 24, padding: 16, background: '#f5f5f5', borderRadius: 8 }} className="lyrics-section">
-                    <Text type="secondary">Lyrics will appear here...</Text>
+                <div style={{ marginTop: 24, padding: 16, background: '#f5f5f5', borderRadius: 8, height: 200, overflow: 'hidden', position: 'relative' }} className="lyrics-section">
+                    {!result?.lyrics || result.lyrics.length === 0 ? (
+                        <Text type="secondary">{language === 'en' ? 'Lyrics will appear here...' : 'Здесь появится текст песни...'}</Text>
+                    ) : (
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                transition: 'transform 0.5s ease-out'
+                            }}
+                            ref={(el) => {
+                                if (el && result.lyrics) {
+                                    // Logic to center the current lyric
+                                    // We need to calculate the offset based on the current lyric index
+                                    // Finding the active index
+                                    let activeIndex = 0;
+                                    for (let i = 0; i < result.lyrics.length; i++) {
+                                        if (currentTime >= result.lyrics[i].time) {
+                                            activeIndex = i;
+                                        }
+                                    }
+
+                                    // Assuming each line has a fixed height or we can estimate/measure
+                                    // Ideally we want the active line to be in the middle of the container
+                                    // Container height is 200px. Middle is 100px.
+                                    // Let's assume line height is roughly 24px + margins.
+
+                                    // Better approach: transform translate Y based on active index
+                                    const lineHeight = 32; // Approx height with padding
+                                    const containerHeight = 200;
+                                    const centerOffset = containerHeight / 2 - lineHeight / 2;
+
+                                    const translateY = centerOffset - (activeIndex * lineHeight);
+                                    el.style.transform = `translateY(${translateY}px)`;
+                                }
+                            }}
+                        >
+                            {result.lyrics.map((line, index) => {
+                                const isActive =
+                                    currentTime >= line.time &&
+                                    (!result.lyrics![index + 1] || currentTime < result.lyrics![index + 1].time);
+
+                                return (
+                                    <div
+                                        key={index}
+                                        style={{
+                                            height: 32,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            transition: 'all 0.3s ease',
+                                            transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                                            fontWeight: isActive ? 'bold' : 'normal',
+                                            opacity: isActive ? 1 : 0.6,
+                                            color: isActive ? '#000' : '#666'
+                                        }}
+                                    >
+                                        {line.text}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

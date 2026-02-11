@@ -11,18 +11,19 @@ export const MainPage: React.FC = () => {
     const [data, setData] = useState<Song[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Initial random generic 64-bit seed (simulated with large random blocks)
-    // We utilize crypto.getRandomValues if available for better entropy, otherwise Math.random
     const getRandomSeedString = () => {
         if (window.crypto && window.crypto.getRandomValues) {
             const array = new BigUint64Array(1);
             window.crypto.getRandomValues(array);
-            return array[0].toString();
+            const maxInt64 = 9223372036854775807n;
+            return (array[0] & maxInt64).toString();
         }
-        // Fallback: Combine two 32-bit randoms
-        const high = Math.floor(Math.random() * 0xFFFFFFFF);
-        const low = Math.floor(Math.random() * 0xFFFFFFFF);
-        return BigInt(high).toString() + low.toString();
+
+        const high = BigInt(Math.floor(Math.random() * 0x100000000));
+        const low = BigInt(Math.floor(Math.random() * 0x100000000));
+        const combined = (high << 32n) | low;
+        const maxInt64 = 9223372036854775807n;
+        return (combined & maxInt64).toString();
     };
 
     const [seed, setSeed] = useState<string>(() => getRandomSeedString());
@@ -94,9 +95,10 @@ export const MainPage: React.FC = () => {
     const didMountRef = useRef(false);
 
     useEffect(() => {
-        if (page !== 1 || !didMountRef.current) {
+        if (page !== 1) {
             setPage(1);
         } else {
+            setData([]);
             fetchData(true, 1, pageSize);
         }
     }, [seed, language, likeFilter, viewMode, pageSize]);

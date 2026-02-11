@@ -16,4 +16,10 @@ export interface SongResult {
     finalMixPath: string;
     imagePath: string;
     imageUrl: string;
+    lyrics?: LyricLine[];
+}
+
+export interface LyricLine {
+    time: number;
+    text: string;
 }

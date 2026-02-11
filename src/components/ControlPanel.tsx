@@ -63,7 +63,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             <Space wrap size="middle">
                 {/* Seed Control */}
                 <Space>
-                    <Text strong>Seed:</Text>
+                    <Text strong>{language === 'en' ? 'Seed:' : 'Сид:'}</Text>
                     <Input
                         value={seed}
                         onChange={(e) => setSeed(e.target.value)}
@@ -88,7 +88,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
                 {/* Like Filter */}
                 <div style={{ width: 200, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Text>Likes:</Text>
+                    <Text>{language === 'en' ? 'Likes:' : 'Лайки:'}</Text>
                     <Slider
                         min={0}
                         max={10}
@@ -96,11 +96,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                         value={internalLike === -1 ? 0 : internalLike}
                         onChange={(val) => setInternalLike(val)}
                         style={{ flex: 1 }}
-                        tooltip={{ formatter: (val) => val === 0 ? 'All' : val }}
+                        tooltip={{ formatter: (val) => val === 0 ? (language === 'en' ? 'All' : 'Все') : val }}
                     />
-                    <Text style={{ minWidth: 25 }}>{internalLike > 0 ? internalLike : 'All'}</Text>
+                    <Text style={{ minWidth: 25 }}>{internalLike > 0 ? internalLike : (language === 'en' ? 'All' : 'Все')}</Text>
                 </div>
-                {likeFilter > 0 && <Button size="small" onClick={() => setLikeFilter(-1)}>Clear</Button>}
+                {likeFilter > 0 && <Button size="small" onClick={() => setLikeFilter(-1)}>{language === 'en' ? 'Clear' : 'Сброс'}</Button>}
             </Space>
 
 
