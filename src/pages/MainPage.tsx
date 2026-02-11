@@ -10,7 +10,6 @@ const { Content } = Layout;
 export const MainPage: React.FC = () => {
     const [data, setData] = useState<Song[]>([]);
     const [loading, setLoading] = useState(false);
-    const didFetchRef = useRef(false);
 
     // Initial random generic 64-bit seed (simulated with large random blocks)
     // We utilize crypto.getRandomValues if available for better entropy, otherwise Math.random
