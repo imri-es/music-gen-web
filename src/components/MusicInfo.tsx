@@ -71,16 +71,12 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song, language }) => {
     const handleLoadedMetadata = () => {
         if (audioRef.current) {
             setDuration(audioRef.current.duration);
-            // Auto-play when source is ready
             audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.warn("Auto-play prevented", e));
         }
     };
 
     const handleAudioError = () => {
         if (!result) return;
-
-        // If we are currently trying to play the final mix and it fails (likely 404/403/Quota)
-        // Fallback to instrumental
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         const finalMixUrl = `${apiUrl}${result.finalMixPath}`;
 
@@ -88,7 +84,6 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song, language }) => {
             setAudioError("Gemini quota is exhausted, the song with no lyrics is playing");
             const instrumentalUrl = `${apiUrl}${result.instrumentalPath}`;
             setCurrentAudioSrc(instrumentalUrl);
-            // Reset player state for new source
             setIsPlaying(false);
             if (audioRef.current) {
                 audioRef.current.load();
@@ -201,23 +196,13 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song, language }) => {
                             }}
                             ref={(el) => {
                                 if (el && result.lyrics) {
-                                    // Logic to center the current lyric
-                                    // We need to calculate the offset based on the current lyric index
-                                    // Finding the active index
                                     let activeIndex = 0;
                                     for (let i = 0; i < result.lyrics.length; i++) {
                                         if (currentTime >= result.lyrics[i].time) {
                                             activeIndex = i;
                                         }
                                     }
-
-                                    // Assuming each line has a fixed height or we can estimate/measure
-                                    // Ideally we want the active line to be in the middle of the container
-                                    // Container height is 200px. Middle is 100px.
-                                    // Let's assume line height is roughly 24px + margins.
-
-                                    // Better approach: transform translate Y based on active index
-                                    const lineHeight = 32; // Approx height with padding
+                                    const lineHeight = 32;
                                     const containerHeight = 200;
                                     const centerOffset = containerHeight / 2 - lineHeight / 2;
 

@@ -28,15 +28,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     likeFilter,
     setLikeFilter
 }) => {
-    // Local state for debouncing slider
     const [internalLike, setInternalLike] = useState(likeFilter);
 
-    // Sync local state when prop changes (e.g. invalidation or clear)
     useEffect(() => {
         setInternalLike(likeFilter);
     }, [likeFilter]);
 
-    // Debounce the update to parent
     useEffect(() => {
         if (internalLike === likeFilter) return;
 
@@ -61,7 +58,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             gap: '16px'
         }}>
             <Space wrap size="middle">
-                {/* Seed Control */}
                 <Space>
                     <Text strong>{language === 'en' ? 'Seed:' : 'Сид:'}</Text>
                     <Input
@@ -80,13 +76,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     />
                 </Space>
 
-                {/* Language Switch */}
                 <Radio.Group value={language} onChange={(e) => setLanguage(e.target.value)} buttonStyle="solid">
                     <Radio.Button value="en">English</Radio.Button>
                     <Radio.Button value="ru">Русский</Radio.Button>
                 </Radio.Group>
 
-                {/* Like Filter */}
                 <div style={{ width: 200, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <Text>{language === 'en' ? 'Likes:' : 'Лайки:'}</Text>
                     <Slider
@@ -104,7 +98,6 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             </Space>
 
 
-            {/* View Mode - Pushed to right by justifyContent: space-between */}
             <Radio.Group value={viewMode} onChange={e => setViewMode(e.target.value)}>
                 <Radio.Button value="table">
                     <TableOutlined />

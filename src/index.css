@@ -80,14 +80,11 @@ button:focus-visible {
 
 .ant-table-tbody>tr.ant-table-row:hover {
   transform: scale(1.01);
-  /* Slight glow */
   z-index: 100;
   position: relative;
-  /* Ensure background covers content behind */
   background-color: #fff;
 }
 
-/* Override antd hover style if needed, or let it blend */
 .ant-table-tbody>tr.ant-table-row:hover>td {
   background: inherit;
 }
@@ -97,7 +94,6 @@ button:focus-visible {
   overflow-x: hidden;
 }
 
-/* Music Info Component Styles */
 .music-info-container {
   display: flex;
   gap: 24px;

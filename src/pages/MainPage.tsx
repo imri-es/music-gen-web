@@ -57,7 +57,6 @@ export const MainPage: React.FC = () => {
         try {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
             const skip = (currentPage - 1) * currentSize;
-            // Validation for likes
             const likesParam = likeFilter > 0 ? likeFilter : -1;
 
             const response = await axios.get<Song[]>(`${apiUrl}/api/music/data`, {
