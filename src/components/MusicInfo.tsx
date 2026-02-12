@@ -22,6 +22,7 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song, language }) => {
     const [duration, setDuration] = useState(0);
     const [audioError, setAudioError] = useState<string | null>(null);
     const [currentAudioSrc, setCurrentAudioSrc] = useState<string | null>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
     const calledRef = useRef(false);
@@ -100,6 +101,26 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song, language }) => {
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
+    const handleDownload = async () => {
+        if (!currentAudioSrc) return;
+        setIsDownloading(true);
+        try {
+            const response = await axios.get(currentAudioSrc, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${song.artistName} - ${song.musicName}.wav`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading the file', error);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
     return (
         <div className="music-info-container">
             <div className="music-info-image-wrapper">
@@ -173,9 +194,8 @@ export const MusicInfo: React.FC<MusicInfoProps> = ({ song, language }) => {
                                 <Button
                                     type="text"
                                     icon={<DownloadOutlined />}
-                                    href={currentAudioSrc}
-                                    download={`${song.artistName} - ${song.musicName}.wav`}
-                                    target="_blank"
+                                    loading={isDownloading}
+                                    onClick={handleDownload}
                                     title={language === 'en' ? "Download" : "Скачать"}
                                 />
                             </div>
